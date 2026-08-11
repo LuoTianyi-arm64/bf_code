@@ -2,4 +2,6 @@
 // Copyright (c) 2026 LuoTianyi-arm64
 
 pub mod code;
+mod global_var;
 pub use code::*;
+

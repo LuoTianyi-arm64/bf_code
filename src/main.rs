@@ -6,7 +6,12 @@ use bf_asm::*;
 
 fn main() {
     let mut bf_code = String::new();
-    bf_code.push_str(&echo("_KOSHINO_ is a pig."));
+    // bf_code.push_str(&echo("lty"));
+    bf_code.push_str(&write_var_u8(&"lty", 65));
+    bf_code.push_str(&write_var_u8(&"su", 66));
+    bf_code.push_str(&echo_var_u8(&"lty"));
+    bf_code.push_str(&echo_var_u8(&"su"));
+    bf_code.push_str(&echo_var_u8(&"jb"));
     simplify_bf!(code bf_code, target bf_code);
     println!("{bf_code}");
 }

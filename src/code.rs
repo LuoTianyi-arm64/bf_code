@@ -1,69 +1,24 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // Copyright (c) 2026 LuoTianyi-arm64
 
-use std::cell::RefCell;
+use crate::global_var::*;
 use bf_asm::*;
 
-thread_local! {
-    pub static GLOBAL_VEC: RefCell<Vec<usize>> = RefCell::new(Vec::new());
-}
 
-#[macro_export]
-macro_rules! with_vec {
-    ($f: expr) => {
-        $crate::code::GLOBAL_VEC.with($f)
-    };
-}
-
-pub fn push(s: usize) {
-    with_vec!(|v| v.borrow_mut().push(s));
-}
-
-pub fn pop() -> Option<usize> {
-    with_vec!(|v| v.borrow_mut().pop())
-}
-
-pub fn len() -> usize {
-    with_vec!(|v| v.borrow().len())
-}
-
-pub fn is_empty() -> bool {
-    with_vec!(|v| v.borrow().is_empty())
-}
-
-pub fn clear() {
-    with_vec!(|v| v.borrow_mut().clear());
-}
-
-pub fn get(index: usize) -> Option<usize> {
-    with_vec!(|v| v.borrow().get(index).cloned())
-}
-
-pub fn in_vec(value: usize) -> bool {
-    with_vec!(|v| v.borrow().iter().any(|&x| x == value))
-}
-
-pub fn get_all() -> Vec<usize> {
-    with_vec!(|v| v.borrow().clone())
-}
-
-pub fn print_all() {
-    with_vec!(|v| println!("{:?}", v.borrow()));
-}
 
 pub fn echo(text: &str) -> String {
     let temp:Vec<usize> = text.as_bytes().into_iter().map(|x| *x as usize).collect();
-    // println!("{temp:?}");
     let mut ptr:usize = 0;
     let mut temp_print = Vec::new();
+
     loop {
-        if !in_vec(ptr) {
+        if !with_vec_borrow(|v| v.iter().any(|&x| x == ptr)) {
             temp_print.push(ptr);
             if temp_print.len() == 2 {
                 break;
             }
-            ptr += 1;
         }
+        ptr += 1;
     }
     let mut bf_code = String::new();
     bf_asm!(mov ram temp_print[0], number temp[0], tmp ram temp_print[1], target bf_code, clean_target_ram false, clean_tmp_ram false);
@@ -79,3 +34,49 @@ pub fn echo(text: &str) -> String {
     bf_asm!(mov ram temp_print[0], number 0, target bf_code, clean_target_ram true);
     bf_code
 }
+
+pub fn write_var_u8(name: &str, value: u8) -> String {
+    let mut bf_code = String::new();
+    let mut temp_print = Vec::new();
+    let mut ptr:usize = 0;
+
+    loop {
+        if !with_vec_borrow(|v| v.iter().any(|&x| x == ptr)) {
+            temp_print.push(ptr);
+            if temp_print.len() == 2 {
+                break;
+            }
+        }
+        ptr += 1;
+    }
+    with_HashMap_u8(|v| v.insert(name.to_string(), bf_u8(value, temp_print[0])));
+    bf_asm!(add ram temp_print[0], number value as usize, tmp ram temp_print[1], target bf_code);
+    // println!("{:?}", with_HashMap_u8(|v| v.clone()));
+    with_vec(|v| v.push(temp_print[0]));
+    bf_code
+}
+
+pub fn echo_var_u8(name: &str) -> String {
+    let mut bf_code = String::new();
+    let mut temp_print = Vec::new();
+    let mut ptr:usize = 0;
+
+    loop {
+        if !with_vec_borrow(|v| v.iter().any(|&x| x == ptr)) {
+            temp_print.push(ptr);
+            if temp_print.len() == 2 {
+                break;
+            }
+        }
+        ptr += 1;
+    }
+    match with_HashMap_u8(|v| v.get(name).copied()) {
+        Some(v) => {
+            bf_asm!(mov output, ram v.1, target bf_code);
+        },
+        None => panic!("未定义 {name} 变量"),
+    }
+    with_vec(|v| v.push(temp_print[0]));
+    bf_code
+}
+
