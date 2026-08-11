@@ -10,7 +10,7 @@ thread_local! {
 
 #[macro_export]
 macro_rules! with_vec {
-    ($f:expr) => {
+    ($f: expr) => {
         $crate::code::GLOBAL_VEC.with($f)
     };
 }
@@ -77,6 +77,5 @@ pub fn echo(text: &str) -> String {
         bf_asm!(mov output, ram temp_print[0], target bf_code);
     }
     bf_asm!(mov ram temp_print[0], number 0, target bf_code, clean_target_ram true);
-    simplify_bf!(code bf_code, target bf_code);
     bf_code
 }

@@ -5,7 +5,7 @@ version = 4
 [[package]]
 name = "bf_asm"
 version = "0.1.0"
-source = "git+https://github.com/LuoTianyi-arm64/bf-asm#819d32daf90b4a357d05514e87ed279a17cdf608"
+source = "git+https://github.com/LuoTianyi-arm64/bf-asm#e1fed694f5268df78e61ab95662562f92721fc38"
 
 [[package]]
 name = "bf_code"
