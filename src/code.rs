@@ -46,7 +46,6 @@ pub fn write_var_u8(name: &str, value: u8) -> String {
     };
     match with_HashMap_u8(|v| v.insert(name.to_string(), bf_u8(value, temp_print0))) {
         Some(v) => {
-
             bf_asm!(add ram v.1, number value as usize, tmp ram temp_print0, target bf_code);
         },
         None => {
