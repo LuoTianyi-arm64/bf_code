@@ -49,10 +49,12 @@ pub fn write_var_u8(name: &str, value: u8) -> String {
         }
         ptr += 1;
     }
-    with_HashMap_u8(|v| v.insert(name.to_string(), bf_u8(value, temp_print[0])));
+    match with_HashMap_u8(|v| v.insert(name.to_string(), bf_u8(value, temp_print[0]))) {
+        Some(v) => {},
+        None => with_vec(|v| v.push(temp_print[0])),
+    }
     bf_asm!(add ram temp_print[0], number value as usize, tmp ram temp_print[1], target bf_code);
     // println!("{:?}", with_HashMap_u8(|v| v.clone()));
-    with_vec(|v| v.push(temp_print[0]));
     bf_code
 }
 
