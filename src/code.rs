@@ -37,23 +37,30 @@ pub fn echo(text: &str) -> String {
 
 pub fn write_var_u8(name: &str, value: u8) -> String {
     let mut bf_code = String::new();
-    let mut temp_print = Vec::new();
     let mut ptr:usize = 0;
-
-    loop {
+    let temp_print0 = loop {
         if !with_vec_borrow(|v| v.iter().any(|&x| x == ptr)) {
-            temp_print.push(ptr);
-            if temp_print.len() == 2 {
-                break;
-            }
+            break ptr;
         }
         ptr += 1;
+    };
+    match with_HashMap_u8(|v| v.insert(name.to_string(), bf_u8(value, temp_print0))) {
+        Some(v) => {
+
+            bf_asm!(add ram v.1, number value as usize, tmp ram temp_print0, target bf_code);
+        },
+        None => {
+            let temp_print1 = loop {
+                if !with_vec_borrow(|v| v.iter().any(|&x| x == ptr)) {
+                    break ptr;
+                }
+                ptr += 1;
+            };
+            bf_asm!(add ram temp_print0, number value as usize, tmp ram temp_print1, target bf_code);
+            with_vec(|v| v.push(temp_print0));
+        },
     }
-    match with_HashMap_u8(|v| v.insert(name.to_string(), bf_u8(value, temp_print[0]))) {
-        Some(v) => {},
-        None => with_vec(|v| v.push(temp_print[0])),
-    }
-    bf_asm!(add ram temp_print[0], number value as usize, tmp ram temp_print[1], target bf_code);
+
     // println!("{:?}", with_HashMap_u8(|v| v.clone()));
     bf_code
 }
