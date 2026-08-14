@@ -76,7 +76,6 @@ pub fn echo_var_u8(name: &str) -> String {
         },
         None => panic!("未定义 {name} 变量"),
     }
-    with_vec(|v| v.push(temp_print[0]));
     bf_code
 }
 
